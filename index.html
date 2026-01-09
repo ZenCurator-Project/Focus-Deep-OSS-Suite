@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen-Clock | Focus-Deep</title>
+    <style>
+        /* 朝霧の白をイメージしたデザイン */
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #F9F9F7; /* 温かみのある白 */
+            color: #2C2C2C; /* 柔らかな黒 */
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            transition: background-color 1s ease;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 8rem;
+            font-weight: 200;
+            letter-spacing: -2px;
+            margin-bottom: 2rem;
+        }
+
+        .controls button {
+            background: none;
+            border: 1px solid #2C2C2C;
+            color: #2C2C2C;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls button:hover {
+            background-color: #2C2C2C;
+            color: #F9F9F7;
+        }
+
+        .status-text {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #888;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="status-text">DEEP WORK</div>
+    <div class="timer-display" id="display">25:00</div>
+    <div class="controls">
+        <button id="startBtn">Start</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+</div>
+
+<script>
+    let timeLeft = 25 * 60;
+    let timerId = null;
+
+    const display = document.getElementById('display');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function updateDisplay() {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    startBtn.addEventListener('click', () => {
+        if (timerId === null) {
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    alert("Focus session complete. Take a breath.");
+                }
+            }, 1000);
+            startBtn.textContent = 'Pause';
+        } else {
+            clearInterval(timerId);
+            timerId = null;
+            startBtn.textContent = 'Start';
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        clearInterval(timerId);
+        timerId = null;
+        timeLeft = 25 * 60;
+        updateDisplay();
+        startBtn.textContent = 'Start';
+    });
+</script>
+
+</body>
+</html>

@@ -7,9 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* コンセプトアートに基づいた背景色 */
             --bg-color: #F1ECE4;
-            /* 和紙のテクスチャURLを共通化 */
-            --washi-url: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            /* 和紙テクスチャのURL（bodyとマスクで共通利用） */
+            --washi-pattern: url('https://www.transparenttextures.com/patterns/cream-paper.png');
         }
 
         body {
@@ -19,7 +20,7 @@
             justify-content: center;
             align-items: center;
             background-color: var(--bg-color);
-            background-image: var(--washi-url);
+            background-image: var(--washi-pattern);
             font-family: 'Noto Serif JP', serif;
             overflow: hidden;
         }
@@ -29,49 +30,40 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 400px;
-            height: 400px;
+            width: 500px;
+            height: 500px;
         }
 
-        /* 墨の画像：プロデューサーの画像を切り抜いて表示 */
+        /* 1. 墨の画像レイヤー */
         .enso-ink-image {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            background-image: url('enso-ink.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 1;
+            /* 白背景を透明にし、墨を和紙に馴染ませる */
+            mix-blend-mode: multiply;
+            opacity: 0.9;
+        }
+
+        /* 2. 墨を隠すためのマスク（蓋）レイヤー */
+        .enso-mask {
             position: absolute;
             width: 100%;
             height: 100%;
-            /* お持ちの画像を読み込み */
-            background-image: url('enso-ink.jpg');
-            /* 画像の左上から1つ目の円だけを切り抜く設定 */
-            background-size: 400% 500%; 
-            background-position: 0 0;
-            background-repeat: no-repeat;
-            z-index: 1;
-            /* 白背景を透明化（乗算） */
-            mix-blend-mode: multiply; 
-            opacity: 0.8;
-        }
-
-        /* 墨を隠すためのマスク：背景と全く同じデザインにする */
-        .enso-mask {
-            position: absolute;
-            width: 105%; /* わずかに大きくして端まで隠す */
-            height: 105%;
             z-index: 5;
             pointer-events: none;
-            /* 背景と全く同じ色とテクスチャを扇形に適用 */
+            /* 背景と同じ色と模様を扇形に適用 */
             background: conic-gradient(transparent 0deg, var(--bg-color) 0deg);
+            background-image: var(--washi-pattern);
             background-blend-mode: normal;
             transform: rotate(-90deg);
         }
 
-        /* 境界線を消すための和紙テクスチャの重ねがけ */
-        .enso-mask::after {
-            content: "";
-            position: absolute;
-            width: 100%; height: 100%;
-            background-image: var(--washi-url);
-            opacity: 0.5;
-        }
-
+        /* 3. タイマー表示レイヤー */
         .content-layer {
             position: relative;
             z-index: 10;
@@ -79,26 +71,42 @@
         }
 
         .status-text {
-            font-size: 0.8rem;
-            letter-spacing: 0.5rem;
+            font-size: 0.9rem;
+            letter-spacing: 0.6rem;
             color: #666;
             margin-bottom: 0.5rem;
+            text-transform: uppercase;
         }
 
         .timer-display {
             font-family: 'Roboto Mono', monospace;
-            font-size: 7rem;
+            font-size: 8rem;
             font-weight: 300;
-            letter-spacing: -4px;
+            letter-spacing: -5px;
             margin: 0;
+            color: #1a1a1a;
+        }
+
+        .controls {
+            margin-top: 2.5rem;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
         }
 
         .controls button {
-            background: none;
-            border: 1px solid rgba(0,0,0,0.1);
-            padding: 0.5rem 1.5rem;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 0.6rem 2rem;
             cursor: pointer;
-            margin-top: 2rem;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.1rem;
+            transition: 0.3s;
+        }
+
+        .controls button:hover {
+            background: rgba(255,255,255,0.7);
         }
     </style>
 </head>
@@ -133,10 +141,15 @@
         const secs = timeLeft % 60;
         display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         
+        // 残り時間に合わせて和紙模様の蓋を回転させ、墨を隠していく
         const progress = 1 - (timeLeft / initialTime);
         const degrees = progress * 360;
-        // マスク自体に背景テクスチャを混ぜることで、四角い箱を消去
-        ensoMask.style.background = `conic-gradient(transparent 0deg, #F1ECE4 ${degrees}deg)`;
+        
+        // 背景色とテクスチャを維持したまま、扇形の角度だけを更新
+        ensoMask.style.background = `conic-gradient(transparent 0deg, var(--bg-color) ${degrees}deg), var(--washi-pattern)`;
+        ensoMask.style.backgroundColor = 'var(--bg-color)';
+        
+        document.title = `${display.textContent} | Zen-Clock`;
     }
 
     startBtn.addEventListener('click', () => {

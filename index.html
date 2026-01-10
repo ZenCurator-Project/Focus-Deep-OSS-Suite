@@ -4,61 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zen-Clock | Focus-Deep</title>
+    <link href="https://fonts.googleapis.com/css2?family=Extra+Light+200&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
     <style>
-        /* 朝霧の白をイメージしたデザイン */
+        :root {
+            --bg-color: #F9F9F7;
+            --text-color: #2C2C2C;
+            --accent-color: #888;
+        }
+
         body {
             margin: 0;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #F9F9F7; /* 温かみのある白 */
-            color: #2C2C2C; /* 柔らかな黒 */
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            transition: background-color 1s ease;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            /* 明朝体とサンセリフをブレンドして気品を出す */
+            font-family: 'Noto Serif JP', 'Helvetica Neue', serif;
+            transition: background-color 2s ease-in-out;
+            overflow: hidden;
+        }
+
+        /* 呼吸するような背景アニメーション */
+        body.active {
+            animation: breath 8s infinite ease-in-out;
+        }
+
+        @keyframes breath {
+            0% { background-color: #F9F9F7; }
+            50% { background-color: #E8E8E1; }
+            100% { background-color: #F9F9F7; }
         }
 
         .container {
             text-align: center;
+            z-index: 10;
+        }
+
+        .status-text {
+            font-size: 0.75rem;
+            letter-spacing: 0.4rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            opacity: 0.7;
         }
 
         .timer-display {
-            font-size: 8rem;
-            font-weight: 200;
-            letter-spacing: -2px;
-            margin-bottom: 2rem;
+            font-family: 'Extra Light 200', sans-serif;
+            font-size: clamp(6rem, 20vw, 10rem); /* 画面サイズに追従 */
+            font-weight: 100;
+            line-height: 1;
+            margin: 1rem 0 3rem 0;
+            font-variant-numeric: tabular-nums; /* 数字の揺れを防ぐ */
+        }
+
+        .controls {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
         }
 
         .controls button {
             background: none;
-            border: 1px solid #2C2C2C;
-            color: #2C2C2C;
-            padding: 0.8rem 2rem;
-            font-size: 1rem;
+            border: none;
+            color: var(--text-color);
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 50px;
-            transition: all 0.3s ease;
+            letter-spacing: 0.2rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            transition: opacity 0.3s ease;
+            opacity: 0.4;
         }
 
         .controls button:hover {
-            background-color: #2C2C2C;
-            color: #F9F9F7;
+            opacity: 1;
         }
 
-        .status-text {
-            margin-top: 2rem;
-            font-size: 0.9rem;
-            color: #888;
-            letter-spacing: 2px;
+        /* 集中モード中のノイズカット */
+        .active .controls button#resetBtn {
+            pointer-events: none;
+            opacity: 0;
         }
+
     </style>
 </head>
-<body>
+<body id="body">
 
 <div class="container">
-    <div class="status-text">DEEP WORK</div>
+    <div class="status-text" id="status">Single-tasking</div>
     <div class="timer-display" id="display">25:00</div>
     <div class="controls">
         <button id="startBtn">Start</button>
@@ -73,29 +109,39 @@
     const display = document.getElementById('display');
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
+    const body = document.getElementById('body');
+    const statusText = document.getElementById('status');
 
     function updateDisplay() {
         const mins = Math.floor(timeLeft / 60);
         const secs = timeLeft % 60;
         display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        document.title = `${display.textContent} | Zen-Clock`;
     }
 
     startBtn.addEventListener('click', () => {
         if (timerId === null) {
+            // タイマー開始
+            body.classList.add('active');
+            statusText.textContent = "Ichigyo Zanmai";
             timerId = setInterval(() => {
                 timeLeft--;
                 updateDisplay();
                 if (timeLeft <= 0) {
                     clearInterval(timerId);
                     timerId = null;
+                    body.classList.remove('active');
                     alert("Focus session complete. Take a breath.");
                 }
             }, 1000);
             startBtn.textContent = 'Pause';
         } else {
+            // タイマー一時停止
             clearInterval(timerId);
             timerId = null;
-            startBtn.textContent = 'Start';
+            body.classList.remove('active');
+            startBtn.textContent = 'Resume';
+            statusText.textContent = "Paused";
         }
     });
 
@@ -104,7 +150,9 @@
         timerId = null;
         timeLeft = 25 * 60;
         updateDisplay();
+        body.classList.remove('active');
         startBtn.textContent = 'Start';
+        statusText.textContent = "Single-tasking";
     });
 </script>
 

@@ -7,10 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Extra+Light+200&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #F9F9F7;
-            --text-color: #2C2C2C;
-            --accent-color: #888;
-            --enso-color: rgba(44, 44, 44, 0.1);
+            --bg-base: #F5F5F2; /* 少し灰みのある和紙の白 */
+            --text-main: #1A1A1A;
+            --enso-ink: rgba(26, 26, 26, 0.15); /* 墨の濃さ */
         }
 
         body {
@@ -19,60 +18,64 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(#e1e1e1 0.5px, transparent 0.5px);
-            background-size: 30px 30px;
-            color: var(--text-color);
+            background-color: var(--bg-base);
+            /* 強力な和紙テクスチャ演出：ノイズとグラデーション */
+            background-image: 
+                radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%),
+                url('https://www.transparenttextures.com/patterns/natural-paper.png'); /* 外部テクスチャで質感を担保 */
+            color: var(--text-main);
             font-family: 'Noto Serif JP', serif;
             transition: background-color 3s ease;
             overflow: hidden;
         }
 
+        /* 呼吸：背景の「光の奥行き」が動く */
         body.active {
-            animation: breath-glow 10s infinite ease-in-out;
+            animation: meditative-glow 12s infinite ease-in-out;
         }
 
-        @keyframes breath-glow {
-            0%, 100% { background-color: #F9F9F7; }
-            50% { background-color: #F0F0EB; }
+        @keyframes meditative-glow {
+            0%, 100% { background-color: #F5F5F2; filter: contrast(100%); }
+            50% { background-color: #EDECE8; filter: contrast(105%); }
         }
 
         .container {
             position: relative;
-            text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 350px;
-            height: 350px;
+            width: 400px;
+            height: 400px;
         }
 
-        /* 円相 (Enso) プログレスバー */
+        /* 円相：墨の滲みを表現 */
         .enso-svg {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            width: 120%;
+            height: 120%;
             transform: rotate(-90deg);
-            pointer-events: none;
+            filter: blur(1.5px); /* 墨の滲み */
         }
 
         .enso-ring {
             fill: none;
-            stroke: var(--enso-color);
-            stroke-width: 1.5;
+            stroke: var(--enso-ink);
+            stroke-width: 4; /* 少し太くして存在感を出す */
             stroke-linecap: round;
-            stroke-dasharray: 628; /* 2 * PI * r (r=100) */
-            stroke-dashoffset: 628;
-            transition: stroke-dashoffset 1s linear;
+            stroke-dasharray: 628;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear, stroke 2s ease;
+        }
+
+        .active .enso-ring {
+            stroke: rgba(26, 26, 26, 0.4); /* 集中中は墨が濃くなる */
         }
 
         .status-text {
-            font-size: 0.7rem;
-            letter-spacing: 0.5rem;
-            color: var(--accent-color);
+            font-size: 0.8rem;
+            letter-spacing: 0.6rem;
+            color: #666;
             text-transform: uppercase;
             margin-bottom: 0.5rem;
             z-index: 10;
@@ -80,32 +83,38 @@
 
         .timer-display {
             font-family: 'Extra Light 200', sans-serif;
-            font-size: 5.5rem;
+            font-size: 7rem;
             font-weight: 100;
-            margin: 0.5rem 0 2rem 0;
-            font-variant-numeric: tabular-nums;
+            letter-spacing: -2px;
+            margin: 0;
             z-index: 10;
+            font-variant-numeric: tabular-nums;
         }
 
         .controls {
+            margin-top: 2rem;
             display: flex;
-            gap: 1.5rem;
+            gap: 2rem;
             z-index: 10;
         }
 
         .controls button {
             background: none;
             border: none;
-            color: var(--text-color);
-            font-size: 0.7rem;
+            color: var(--text-main);
+            font-size: 0.75rem;
             cursor: pointer;
             letter-spacing: 0.2rem;
             text-transform: uppercase;
             opacity: 0.3;
-            transition: 0.5s;
+            padding: 10px;
+            transition: all 0.5s;
         }
 
-        .controls button:hover { opacity: 1; }
+        .controls button:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body id="body">
@@ -135,16 +144,14 @@
     const statusText = document.getElementById('status');
     const enso = document.getElementById('enso');
 
-    const totalDash = 628; // stroke-dasharrayの値
-
     function updateDisplay() {
         const mins = Math.floor(timeLeft / 60);
         const secs = timeLeft % 60;
         display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         
-        // 円相のプログレス更新
+        // 円相（墨の輪）が消えていく演出
         const progress = timeLeft / initialTime;
-        const offset = totalDash * progress;
+        const offset = 628 * (1 - progress); 
         enso.style.strokeDashoffset = offset;
         
         document.title = `${display.textContent} | Zen-Clock`;
@@ -162,7 +169,6 @@
                     timerId = null;
                     body.classList.remove('active');
                     statusText.textContent = "Finished";
-                    alert("Focus session complete. Take a breath.");
                 }
             }, 1000);
             startBtn.textContent = 'Pause';
@@ -185,7 +191,6 @@
         statusText.textContent = "Single-tasking";
     });
 
-    // 初期化
     updateDisplay();
 </script>
 

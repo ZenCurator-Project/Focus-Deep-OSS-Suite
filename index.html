@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zen-Clock | Focus-Deep</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Noto+Serif+JP:wght@300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #F0EDE8;
+            --bg-base: #F0EDE8; /* 和紙のベースカラー */
             --text-main: #1A1A1A;
         }
 
@@ -18,9 +18,8 @@
             justify-content: center;
             align-items: center;
             background-color: var(--bg-base);
-            /* 和紙の質感を背景に採用 */
-            background-image: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.05) 100%),
-                              url('https://www.transparenttextures.com/patterns/natural-paper.png');
+            /* 和紙の質感を背景として指定 */
+            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
             font-family: 'Noto Serif JP', serif;
             overflow: hidden;
         }
@@ -28,51 +27,57 @@
         .container {
             position: relative;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 420px;
-            height: 420px;
+            width: 450px;
+            height: 450px;
         }
 
-        /* 墨の円相（コンセプトアートを忠実に再現した画像データ） */
-        .enso-ink {
+        /* 1. 墨の画像レイヤー（アップロードした enso-ink.png を表示） */
+        .enso-ink-image {
             position: absolute;
             width: 100%;
             height: 100%;
-            /* 実際の墨の円の画像をデータとして埋め込み */
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cpath d='M250,50c-110.5,0-200,89.5-200,200s89.5,200,200,200c85.1,0,157.6-53,186.2-127.3' fill='none' stroke='%231a1a1a' stroke-width='12' stroke-linecap='round' style='filter:blur(1px);opacity:0.8;stroke-dasharray:1200;stroke-dashoffset:0'/%3E%3C/svg%3E");
+            background-image: url('enso-ink.png'); 
             background-size: contain;
             background-repeat: no-repeat;
+            z-index: 1;
             opacity: 0.8;
-            transition: opacity 1s ease;
         }
 
-        /* 墨が消えていく演出用のマスク */
+        /* 2. 墨を隠していくためのマスク（蓋）レイヤー */
         .enso-mask-container {
             position: absolute;
             width: 100%;
             height: 100%;
-            overflow: hidden;
-            transform: rotate(-90deg);
+            z-index: 2;
+            transform: rotate(-90deg); /* 12時の位置から開始 */
+            pointer-events: none;
         }
 
         .enso-mask {
             position: absolute;
             width: 100%;
             height: 100%;
-            background-color: var(--bg-base);
+            /* 背景と同じ色で塗りつぶした扇形の蓋（これで墨を隠します） */
+            background: conic-gradient(transparent 0deg, var(--bg-base) 0deg);
             transform-origin: center;
-            transform: rotate(0deg); /* 0度(全表示)から360度(全非表示)へ */
-            transition: transform 1s linear;
+            transition: background 1s linear;
+        }
+
+        /* 3. タイマー表示レイヤー */
+        .content-layer {
+            position: relative;
+            z-index: 10;
+            text-align: center;
         }
 
         .status-text {
             font-size: 0.9rem;
-            letter-spacing: 0.5rem;
-            color: #555;
+            letter-spacing: 0.6rem;
+            color: #666;
             margin-bottom: 0.5rem;
-            z-index: 10;
+            text-transform: uppercase;
         }
 
         .timer-display {
@@ -81,14 +86,13 @@
             font-weight: 300;
             letter-spacing: -4px;
             margin: 0;
-            z-index: 10;
         }
 
         .controls {
             margin-top: 2rem;
             display: flex;
             gap: 1.5rem;
-            z-index: 10;
+            justify-content: center;
         }
 
         .controls button {
@@ -98,29 +102,32 @@
             padding: 0.5rem 1.5rem;
             font-size: 0.75rem;
             cursor: pointer;
-            letter-spacing: 0.1rem;
             text-transform: uppercase;
-            transition: 0.3s;
+            letter-spacing: 0.1rem;
+            transition: all 0.3s;
         }
 
         .controls button:hover {
-            background: rgba(0,0,0,0.03);
+            background-color: rgba(0,0,0,0.03);
         }
     </style>
 </head>
-<body id="body">
+<body>
 
 <div class="container">
-    <div class="enso-ink" id="ensoInk"></div>
+    <div class="enso-ink-image"></div>
+    
     <div class="enso-mask-container">
         <div class="enso-mask" id="ensoMask"></div>
     </div>
 
-    <div class="status-text" id="status">Single-tasking</div>
-    <div id="display" class="timer-display">25:00</div>
-    <div class="controls">
-        <button id="startBtn">Start</button>
-        <button id="resetBtn">Reset</button>
+    <div class="content-layer">
+        <div class="status-text" id="status">Single-tasking</div>
+        <div id="display" class="timer-display">25:00</div>
+        <div class="controls">
+            <button id="startBtn">Start</button>
+            <button id="resetBtn">Reset</button>
+        </div>
     </div>
 </div>
 
@@ -133,30 +140,30 @@
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
     const ensoMask = document.getElementById('ensoMask');
-    const statusText = document.getElementById('status');
 
     function updateDisplay() {
         const mins = Math.floor(timeLeft / 60);
         const secs = timeLeft % 60;
         display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         
-        // 墨の円を「消していく」ロジック
-        const progress = timeLeft / initialTime;
-        const rotateDegree = (1 - progress) * 360;
-        ensoMask.style.transform = `rotate(${rotateDegree}deg)`;
+        // 残り時間に合わせて「蓋（マスク）」を広げ、墨を隠していく
+        const progress = 1 - (timeLeft / initialTime);
+        const degrees = progress * 360;
+        // 背景色（#F0EDE8）の扇形を広げていく
+        ensoMask.style.background = `conic-gradient(transparent 0deg, #F0EDE8 ${degrees}deg)`;
         
         document.title = `${display.textContent} | Zen-Clock`;
     }
 
     startBtn.addEventListener('click', () => {
         if (timerId === null) {
-            statusText.textContent = "Ichigyo Zanmai";
             timerId = setInterval(() => {
                 timeLeft--;
                 updateDisplay();
                 if (timeLeft <= 0) {
                     clearInterval(timerId);
                     timerId = null;
+                    alert("Focus session complete.");
                 }
             }, 1000);
             startBtn.textContent = 'Pause';
@@ -173,9 +180,9 @@
         timeLeft = initialTime;
         updateDisplay();
         startBtn.textContent = 'Start';
-        statusText.textContent = "Single-tasking";
     });
 
+    // 初期化
     updateDisplay();
 </script>
 </body>

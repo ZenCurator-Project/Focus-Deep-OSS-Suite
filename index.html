@@ -34,34 +34,24 @@
             height: 500px;
         }
 
-        /* 1. 墨の画像レイヤー */
-        .enso-ink-image {
-            position: absolute;
-            width: 90%;
-            height: 90%;
-            background-image: url('enso-ink.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            z-index: 1;
-            /* 白背景を透明にし、墨を和紙に馴染ませる */
-            mix-blend-mode: multiply;
-            opacity: 0.9;
-        }
+/* 1. 墨の画像レイヤー：z-index（重なり順）を一時的に上げます */
+.enso-ink-image {
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    background-image: url('enso-ink.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 20; /* 蓋よりも数字よりも一番上に持ってくる設定 */
+    mix-blend-mode: multiply;
+    opacity: 1; /* はっきり見えるように1にします */
+}
 
-        /* 2. 墨を隠すためのマスク（蓋）レイヤー */
-        .enso-mask {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 5;
-            pointer-events: none;
-            /* 背景と同じ色と模様を扇形に適用 */
-            background: conic-gradient(transparent 0deg, var(--bg-color) 0deg);
-            background-image: var(--washi-pattern);
-            background-blend-mode: normal;
-            transform: rotate(-90deg);
-        }
+/* 2. 蓋（マスク）レイヤー：一度透明にして、墨の出現を妨げないようにします */
+.enso-mask {
+    display: none; /* 一時的に非表示にします */
+}
 
         /* 3. タイマー表示レイヤー */
         .content-layer {
@@ -182,3 +172,4 @@
 </script>
 </body>
 </html>
+

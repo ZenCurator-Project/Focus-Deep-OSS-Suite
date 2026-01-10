@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zen-Clock | Focus-Deep</title>
-    <link href="https://fonts.googleapis.com/css2?family=Extra+Light+200&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Noto+Serif+JP:wght@300&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #F5F5F2; /* 少し灰みのある和紙の白 */
+            --bg-base: #F0EDE8;
             --text-main: #1A1A1A;
-            --enso-ink: rgba(26, 26, 26, 0.15); /* 墨の濃さ */
         }
 
         body {
@@ -19,24 +18,11 @@
             justify-content: center;
             align-items: center;
             background-color: var(--bg-base);
-            /* 強力な和紙テクスチャ演出：ノイズとグラデーション */
-            background-image: 
-                radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%),
-                url('https://www.transparenttextures.com/patterns/natural-paper.png'); /* 外部テクスチャで質感を担保 */
-            color: var(--text-main);
+            /* 和紙の質感を背景に採用 */
+            background-image: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.05) 100%),
+                              url('https://www.transparenttextures.com/patterns/natural-paper.png');
             font-family: 'Noto Serif JP', serif;
-            transition: background-color 3s ease;
             overflow: hidden;
-        }
-
-        /* 呼吸：背景の「光の奥行き」が動く */
-        body.active {
-            animation: meditative-glow 12s infinite ease-in-out;
-        }
-
-        @keyframes meditative-glow {
-            0%, 100% { background-color: #F5F5F2; filter: contrast(100%); }
-            50% { background-color: #EDECE8; filter: contrast(105%); }
         }
 
         .container {
@@ -45,84 +31,90 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 400px;
-            height: 400px;
+            width: 420px;
+            height: 420px;
         }
 
-        /* 円相：墨の滲みを表現 */
-        .enso-svg {
+        /* 墨の円相（コンセプトアートを忠実に再現した画像データ） */
+        .enso-ink {
             position: absolute;
-            width: 120%;
-            height: 120%;
+            width: 100%;
+            height: 100%;
+            /* 実際の墨の円の画像をデータとして埋め込み */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cpath d='M250,50c-110.5,0-200,89.5-200,200s89.5,200,200,200c85.1,0,157.6-53,186.2-127.3' fill='none' stroke='%231a1a1a' stroke-width='12' stroke-linecap='round' style='filter:blur(1px);opacity:0.8;stroke-dasharray:1200;stroke-dashoffset:0'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.8;
+            transition: opacity 1s ease;
+        }
+
+        /* 墨が消えていく演出用のマスク */
+        .enso-mask-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             transform: rotate(-90deg);
-            filter: blur(1.5px); /* 墨の滲み */
         }
 
-        .enso-ring {
-            fill: none;
-            stroke: var(--enso-ink);
-            stroke-width: 4; /* 少し太くして存在感を出す */
-            stroke-linecap: round;
-            stroke-dasharray: 628;
-            stroke-dashoffset: 0;
-            transition: stroke-dashoffset 1s linear, stroke 2s ease;
-        }
-
-        .active .enso-ring {
-            stroke: rgba(26, 26, 26, 0.4); /* 集中中は墨が濃くなる */
+        .enso-mask {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-base);
+            transform-origin: center;
+            transform: rotate(0deg); /* 0度(全表示)から360度(全非表示)へ */
+            transition: transform 1s linear;
         }
 
         .status-text {
-            font-size: 0.8rem;
-            letter-spacing: 0.6rem;
-            color: #666;
-            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5rem;
+            color: #555;
             margin-bottom: 0.5rem;
             z-index: 10;
         }
 
         .timer-display {
-            font-family: 'Extra Light 200', sans-serif;
-            font-size: 7rem;
-            font-weight: 100;
-            letter-spacing: -2px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 7.5rem;
+            font-weight: 300;
+            letter-spacing: -4px;
             margin: 0;
             z-index: 10;
-            font-variant-numeric: tabular-nums;
         }
 
         .controls {
             margin-top: 2rem;
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             z-index: 10;
         }
 
         .controls button {
             background: none;
-            border: none;
+            border: 1px solid rgba(0,0,0,0.1);
             color: var(--text-main);
+            padding: 0.5rem 1.5rem;
             font-size: 0.75rem;
             cursor: pointer;
-            letter-spacing: 0.2rem;
+            letter-spacing: 0.1rem;
             text-transform: uppercase;
-            opacity: 0.3;
-            padding: 10px;
-            transition: all 0.5s;
+            transition: 0.3s;
         }
 
         .controls button:hover {
-            opacity: 1;
-            transform: translateY(-2px);
+            background: rgba(0,0,0,0.03);
         }
     </style>
 </head>
 <body id="body">
 
 <div class="container">
-    <svg class="enso-svg" viewBox="0 0 220 220">
-        <circle class="enso-ring" id="enso" cx="110" cy="110" r="100"></circle>
-    </svg>
+    <div class="enso-ink" id="ensoInk"></div>
+    <div class="enso-mask-container">
+        <div class="enso-mask" id="ensoMask"></div>
+    </div>
 
     <div class="status-text" id="status">Single-tasking</div>
     <div id="display" class="timer-display">25:00</div>
@@ -140,26 +132,24 @@
     const display = document.getElementById('display');
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const body = document.getElementById('body');
+    const ensoMask = document.getElementById('ensoMask');
     const statusText = document.getElementById('status');
-    const enso = document.getElementById('enso');
 
     function updateDisplay() {
         const mins = Math.floor(timeLeft / 60);
         const secs = timeLeft % 60;
         display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         
-        // 円相（墨の輪）が消えていく演出
+        // 墨の円を「消していく」ロジック
         const progress = timeLeft / initialTime;
-        const offset = 628 * (1 - progress); 
-        enso.style.strokeDashoffset = offset;
+        const rotateDegree = (1 - progress) * 360;
+        ensoMask.style.transform = `rotate(${rotateDegree}deg)`;
         
         document.title = `${display.textContent} | Zen-Clock`;
     }
 
     startBtn.addEventListener('click', () => {
         if (timerId === null) {
-            body.classList.add('active');
             statusText.textContent = "Ichigyo Zanmai";
             timerId = setInterval(() => {
                 timeLeft--;
@@ -167,17 +157,13 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerId);
                     timerId = null;
-                    body.classList.remove('active');
-                    statusText.textContent = "Finished";
                 }
             }, 1000);
             startBtn.textContent = 'Pause';
         } else {
             clearInterval(timerId);
             timerId = null;
-            body.classList.remove('active');
             startBtn.textContent = 'Resume';
-            statusText.textContent = "Paused";
         }
     });
 
@@ -186,13 +172,11 @@
         timerId = null;
         timeLeft = initialTime;
         updateDisplay();
-        body.classList.remove('active');
         startBtn.textContent = 'Start';
         statusText.textContent = "Single-tasking";
     });
 
     updateDisplay();
 </script>
-
 </body>
 </html>

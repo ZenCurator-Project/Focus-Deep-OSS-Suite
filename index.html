@@ -1,175 +1,20 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zen-Clock | Focus-Deep</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
     <style>
-        :root {
-            /* コンセプトアートに基づいた背景色 */
-            --bg-color: #F1ECE4;
-            /* 和紙テクスチャのURL（bodyとマスクで共通利用） */
-            --washi-pattern: url('https://www.transparenttextures.com/patterns/cream-paper.png');
-        }
-
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg-color);
-            background-image: var(--washi-pattern);
-            font-family: 'Noto Serif JP', serif;
-            overflow: hidden;
-        }
-
-        .container {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 500px;
-            height: 500px;
-        }
-
-/* 1. 墨の画像レイヤー：z-index（重なり順）を一時的に上げます */
-.enso-ink-image {
-    position: absolute;
-    width: 90%;
-    height: 90%;
-    background-image: url('enso-ink.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 20; /* 蓋よりも数字よりも一番上に持ってくる設定 */
-    mix-blend-mode: multiply;
-    opacity: 1; /* はっきり見えるように1にします */
-}
-
-/* 2. 蓋（マスク）レイヤー：一度透明にして、墨の出現を妨げないようにします */
-.enso-mask {
-    display: none; /* 一時的に非表示にします */
-}
-
-        /* 3. タイマー表示レイヤー */
-        .content-layer {
-            position: relative;
-            z-index: 10;
-            text-align: center;
-        }
-
-        .status-text {
-            font-size: 0.9rem;
-            letter-spacing: 0.6rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-        }
-
-        .timer-display {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 8rem;
-            font-weight: 300;
-            letter-spacing: -5px;
-            margin: 0;
-            color: #1a1a1a;
-        }
-
-        .controls {
-            margin-top: 2.5rem;
-            display: flex;
-            gap: 2rem;
-            justify-content: center;
-        }
-
-        .controls button {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(0,0,0,0.08);
-            padding: 0.6rem 2rem;
-            cursor: pointer;
-            font-family: 'Noto Serif JP', serif;
-            font-size: 0.8rem;
-            letter-spacing: 0.1rem;
-            transition: 0.3s;
-        }
-
-        .controls button:hover {
-            background: rgba(255,255,255,0.7);
+        body { background: #F0EDE8; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .test-container {
+            border: 2px solid red; /* 画像の枠を表示 */
+            width: 300px;
+            height: 300px;
+            background-image: url('enso-ink.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="enso-ink-image"></div>
-    <div class="enso-mask" id="ensoMask"></div>
-
-    <div class="content-layer">
-        <div id="status" class="status-text">Single-tasking</div>
-        <div id="display" class="timer-display">25:00</div>
-        <div class="controls">
-            <button id="startBtn">Start</button>
-            <button id="resetBtn">Reset</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    let initialTime = 25 * 60;
-    let timeLeft = initialTime;
-    let timerId = null;
-
-    const display = document.getElementById('display');
-    const startBtn = document.getElementById('startBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const ensoMask = document.getElementById('ensoMask');
-
-    function updateDisplay() {
-        const mins = Math.floor(timeLeft / 60);
-        const secs = timeLeft % 60;
-        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        
-        // 残り時間に合わせて和紙模様の蓋を回転させ、墨を隠していく
-        const progress = 1 - (timeLeft / initialTime);
-        const degrees = progress * 360;
-        
-        // 背景色とテクスチャを維持したまま、扇形の角度だけを更新
-        ensoMask.style.background = `conic-gradient(transparent 0deg, var(--bg-color) ${degrees}deg), var(--washi-pattern)`;
-        ensoMask.style.backgroundColor = 'var(--bg-color)';
-        
-        document.title = `${display.textContent} | Zen-Clock`;
-    }
-
-    startBtn.addEventListener('click', () => {
-        if (timerId === null) {
-            timerId = setInterval(() => {
-                timeLeft--;
-                updateDisplay();
-                if (timeLeft <= 0) {
-                    clearInterval(timerId);
-                    timerId = null;
-                }
-            }, 1000);
-            startBtn.textContent = 'Pause';
-        } else {
-            clearInterval(timerId);
-            timerId = null;
-            startBtn.textContent = 'Resume';
-        }
-    });
-
-    resetBtn.addEventListener('click', () => {
-        clearInterval(timerId);
-        timerId = null;
-        timeLeft = initialTime;
-        updateDisplay();
-        startBtn.textContent = 'Start';
-    });
-
-    updateDisplay();
-</script>
+    <div class="test-container"></div>
 </body>
 </html>
-

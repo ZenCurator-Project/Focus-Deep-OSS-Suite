@@ -1,104 +1,193 @@
-<style>
-    :root {
-        --bg-color: #F9F9F7;
-        --text-color: #2C2C2C;
-        --accent-color: #888;
-        --enso-color: rgba(44, 44, 44, 0.05); /* 非常に薄い墨色 */
-    }
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen-Clock | Focus-Deep</title>
+    <link href="https://fonts.googleapis.com/css2?family=Extra+Light+200&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F9F9F7;
+            --text-color: #2C2C2C;
+            --accent-color: #888;
+            --enso-color: rgba(44, 44, 44, 0.1);
+        }
 
-    body {
-        margin: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        /* 背景に微かな和紙のようなテクスチャを追加（擬似的） */
-        background-color: var(--bg-color);
-        background-image: radial-gradient(#e1e1e1 0.5px, transparent 0.5px);
-        background-size: 20px 20px;
-        color: var(--text-color);
-        font-family: 'Noto Serif JP', serif;
-        transition: background-color 3s ease;
-        overflow: hidden;
-    }
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#e1e1e1 0.5px, transparent 0.5px);
+            background-size: 30px 30px;
+            color: var(--text-color);
+            font-family: 'Noto Serif JP', serif;
+            transition: background-color 3s ease;
+            overflow: hidden;
+        }
 
-    /* 呼吸する背景：色ではなく、中央の光の強弱で表現 */
-    body.active {
-        animation: breath-glow 10s infinite ease-in-out;
-    }
+        body.active {
+            animation: breath-glow 10s infinite ease-in-out;
+        }
 
-    @keyframes breath-glow {
-        0%, 100% { background-color: #F9F9F7; }
-        50% { background-color: #F0F0EB; }
-    }
+        @keyframes breath-glow {
+            0%, 100% { background-color: #F9F9F7; }
+            50% { background-color: #F0F0EB; }
+        }
 
-    .container {
-        position: relative;
-        text-align: center;
-        z-index: 10;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 400px;
-        height: 400px;
-    }
+        .container {
+            position: relative;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 350px;
+            height: 350px;
+        }
 
-    /* 円相 (Enso) を模した進行状況サークル */
-    .enso-ring {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: 2px solid var(--enso-color);
-        border-radius: 50%;
-        mask-image: linear-gradient(0deg, black 50%, transparent 100%); /* 一筆書き感を出す */
-        transition: transform 1s linear;
-    }
+        /* 円相 (Enso) プログレスバー */
+        .enso-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            pointer-events: none;
+        }
 
-    .status-text {
-        font-size: 0.75rem;
-        letter-spacing: 0.5rem;
-        color: var(--accent-color);
-        text-transform: uppercase;
-        margin-top: -2rem;
-    }
+        .enso-ring {
+            fill: none;
+            stroke: var(--enso-color);
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-dasharray: 628; /* 2 * PI * r (r=100) */
+            stroke-dashoffset: 628;
+            transition: stroke-dashoffset 1s linear;
+        }
 
-    .timer-display {
-        font-family: 'Extra Light 200', sans-serif;
-        font-size: 6rem;
-        font-weight: 100;
-        margin: 1rem 0;
-        font-variant-numeric: tabular-nums;
-    }
+        .status-text {
+            font-size: 0.7rem;
+            letter-spacing: 0.5rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            z-index: 10;
+        }
 
-    .controls button {
-        background: none;
-        border: none;
-        color: var(--text-color);
-        font-size: 0.7rem;
-        cursor: pointer;
-        letter-spacing: 0.2rem;
-        text-transform: uppercase;
-        opacity: 0.3;
-        transition: 0.5s;
-    }
+        .timer-display {
+            font-family: 'Extra Light 200', sans-serif;
+            font-size: 5.5rem;
+            font-weight: 100;
+            margin: 0.5rem 0 2rem 0;
+            font-variant-numeric: tabular-nums;
+            z-index: 10;
+        }
 
-    .controls button:hover { opacity: 1; }
-</style>
+        .controls {
+            display: flex;
+            gap: 1.5rem;
+            z-index: 10;
+        }
 
+        .controls button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 0.7rem;
+            cursor: pointer;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            opacity: 0.3;
+            transition: 0.5s;
+        }
+
+        .controls button:hover { opacity: 1; }
+    </style>
+</head>
 <body id="body">
+
 <div class="container">
-    <div class="enso-ring" id="enso"></div> <div class="status-text" id="status">Single-tasking</div>
+    <svg class="enso-svg" viewBox="0 0 220 220">
+        <circle class="enso-ring" id="enso" cx="110" cy="110" r="100"></circle>
+    </svg>
+
+    <div class="status-text" id="status">Single-tasking</div>
     <div id="display" class="timer-display">25:00</div>
     <div class="controls">
         <button id="startBtn">Start</button>
         <button id="resetBtn">Reset</button>
     </div>
 </div>
+
+<script>
+    let initialTime = 25 * 60;
+    let timeLeft = initialTime;
+    let timerId = null;
+
+    const display = document.getElementById('display');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const body = document.getElementById('body');
+    const statusText = document.getElementById('status');
+    const enso = document.getElementById('enso');
+
+    const totalDash = 628; // stroke-dasharrayの値
+
+    function updateDisplay() {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        // 円相のプログレス更新
+        const progress = timeLeft / initialTime;
+        const offset = totalDash * progress;
+        enso.style.strokeDashoffset = offset;
+        
+        document.title = `${display.textContent} | Zen-Clock`;
+    }
+
+    startBtn.addEventListener('click', () => {
+        if (timerId === null) {
+            body.classList.add('active');
+            statusText.textContent = "Ichigyo Zanmai";
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    body.classList.remove('active');
+                    statusText.textContent = "Finished";
+                    alert("Focus session complete. Take a breath.");
+                }
+            }, 1000);
+            startBtn.textContent = 'Pause';
+        } else {
+            clearInterval(timerId);
+            timerId = null;
+            body.classList.remove('active');
+            startBtn.textContent = 'Resume';
+            statusText.textContent = "Paused";
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        clearInterval(timerId);
+        timerId = null;
+        timeLeft = initialTime;
+        updateDisplay();
+        body.classList.remove('active');
+        startBtn.textContent = 'Start';
+        statusText.textContent = "Single-tasking";
+    });
+
+    // 初期化
+    updateDisplay();
 </script>
 
 </body>
 </html>
-

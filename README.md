@@ -7,6 +7,7 @@ Focus-Deep is a suite of productivity tools designed for creators, developers, a
 ---
 
 ## 🚀 Live Demo
+<img width="1365" height="597" alt="image" src="https://github.com/user-attachments/assets/b0d75e67-7766-4ac6-aa75-f6cbb1dae6f6" />
 ### [→ Click here to try Zen-Clock (The First Module)](https://zencurator-project.github.io/Focus-Deep-OSS-Suite/)
 
 ---

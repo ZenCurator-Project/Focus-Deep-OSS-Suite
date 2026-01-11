@@ -27,16 +27,17 @@
 
         .container {
             position: relative;
-            width: 500px;
-            height: 500px;
+            width: 100%;
+            height: 100%;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
 
-        /* 背景テクスチャレイヤー */
+        /* 背景テクスチャ */
         .background {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -45,20 +46,18 @@
             background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
             background-size: 512px 512px;
             z-index: 0;
+            pointer-events: none;
         }
 
-        /* ラベル */
-        .label {
-            position: absolute;
-            top: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: 'Roboto Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 3px;
-            color: rgba(0, 0, 0, 0.25);
-            text-transform: uppercase;
-            z-index: 5;
+        /* メインコンテンツ領域 */
+        .main-content {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
         }
 
         /* 墨の円レイヤー */
@@ -66,7 +65,6 @@
             position: absolute;
             width: 400px;
             height: 400px;
-            z-index: 2;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -88,12 +86,13 @@
             mask-repeat: no-repeat;
         }
 
-        /* フェードレイヤー（粒子的消失用） */
+        /* 消失フェードレイヤー */
         .enso-fade {
             position: absolute;
             width: 400px;
             height: 400px;
             z-index: 3;
+            pointer-events: none;
             -webkit-mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
             mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
             -webkit-mask-position: center;
@@ -104,18 +103,18 @@
 
         /* フラッシュエフェクト */
         .flash {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(255, 255, 255, 0);
             pointer-events: none;
-            z-index: 10;
+            z-index: 100;
         }
 
-        /* UIコンテナ */
-        .ui-container {
+        /* UI レイヤー（中央） */
+        .ui-center {
             position: absolute;
             width: 100%;
             height: 100%;
@@ -127,69 +126,38 @@
             pointer-events: none;
         }
 
-        /* タイマー数字 */
+        /* ラベル */
+        .label {
+            position: absolute;
+            top: 60px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: rgba(0, 0, 0, 0.25);
+            text-transform: uppercase;
+        }
+
+        /* タイマー数字（中央） */
         .timer-display {
             font-family: 'Roboto Mono', monospace;
             font-size: 64px;
             font-weight: 700;
-            color: rgba(0, 0, 0, 0.25);
+            color: rgba(0, 0, 0, 0.3);
             letter-spacing: 2px;
             text-align: center;
-            margin-bottom: 20px;
-            pointer-events: auto;
-            transition: font-size 0.3s ease;
+            pointer-events: none;
         }
 
-        /* キーボードヒント */
-        .keyboard-hint {
-            position: absolute;
-            bottom: 30px;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 10px;
-            color: rgba(0, 0, 0, 0.15);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            display: none;
-        }
-
-        .keyboard-hint.visible {
-            display: block;
-        }
-
-        /* コントロール */
-        .controls {
-            display: flex;
-            gap: 12px;
-            pointer-events: auto;
-        }
-
-        button {
-            font-family: 'Noto Serif JP', serif;
-            font-size: 13px;
-            padding: 8px 16px;
-            border: 1px solid rgba(0, 0, 0, 0.15);
-            background-color: rgba(255, 255, 255, 0.4);
-            color: rgba(0, 0, 0, 0.6);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 2px;
-            pointer-events: auto;
-        }
-
-        button:hover {
-            background-color: rgba(255, 255, 255, 0.6);
-            color: rgba(0, 0, 0, 0.8);
-        }
-
-        button:active {
-            background-color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* 入力フィールド */
+        /* 入力セクション */
         .input-section {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
+            align-items: center;
+            z-index: 5;
             pointer-events: auto;
         }
 
@@ -211,53 +179,99 @@
             border-color: rgba(0, 0, 0, 0.3);
         }
 
+        /* コントロール部（下部） */
+        .controls {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            gap: 16px;
+            z-index: 5;
+            pointer-events: auto;
+        }
+
+        button {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 13px;
+            padding: 8px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            background-color: rgba(255, 255, 255, 0.4);
+            color: rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.6);
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        button:active {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* キーボードヒント */
+        .keyboard-hint {
+            position: absolute;
+            bottom: 12px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 9px;
+            color: rgba(0, 0, 0, 0.12);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: none;
+        }
+
+        .keyboard-hint.visible {
+            display: block;
+        }
+
         /* 非表示 */
         .hidden {
             display: none;
         }
-
-        /* フォーカス時のキーボードヒント表示 */
-        .running .keyboard-hint {
-            display: block;
-        }
     </style>
 </head>
 <body>
+    <!-- 背景 -->
+    <div class="background"></div>
+
+    <!-- コンテナ -->
     <div class="container">
-        <!-- 背景レイヤー -->
-        <div class="background"></div>
-
-        <!-- ラベル -->
-        <div class="label">SINGLE-TASKING</div>
-
-        <!-- 墨の円レイヤー -->
-        <div class="enso-layer">
-            <div class="enso-image"></div>
-        </div>
-
-        <!-- フェードアウトレイヤー -->
-        <div class="enso-fade" id="ensoFade"></div>
-
-        <!-- フラッシュエフェクト -->
-        <div class="flash" id="flashEffect"></div>
-
-        <!-- UI -->
-        <div class="ui-container">
-            <div class="timer-display" id="timerDisplay">00:00</div>
-            <div class="input-section" id="inputSection">
-                <input type="number" id="minutes" min="0" max="99" value="5" placeholder="MM">
-                <span style="color: rgba(0,0,0,0.3); font-size: 14px; display: flex; align-items: center;">:</span>
-                <input type="number" id="seconds" min="0" max="59" value="0" placeholder="SS">
-                <button id="setBtn">設定</button>
+        <!-- メイン領域 -->
+        <div class="main-content">
+            <!-- 墨の円 -->
+            <div class="enso-layer">
+                <div class="enso-image"></div>
             </div>
+
+            <!-- フェードレイヤー -->
+            <div class="enso-fade" id="ensoFade"></div>
+
+            <!-- 中央UI -->
+            <div class="ui-center">
+                <div class="label">Single-Tasking</div>
+                <div class="timer-display" id="timerDisplay">05:00</div>
+                <div class="input-section" id="inputSection">
+                    <input type="number" id="minutes" min="0" max="99" value="5" placeholder="MM">
+                    <span style="color: rgba(0,0,0,0.3); font-size: 14px;">:</span>
+                    <input type="number" id="seconds" min="0" max="59" value="0" placeholder="SS">
+                    <button id="setBtn">設定</button>
+                </div>
+            </div>
+
+            <!-- コントロール部 -->
             <div class="controls">
-                <button id="startBtn">開始</button>
-                <button id="pauseBtn" class="hidden">一時停止</button>
-                <button id="resetBtn">リセット</button>
+                <button id="startBtn">Start</button>
+                <button id="pauseBtn" class="hidden">Pause</button>
+                <button id="resetBtn">Reset</button>
+                <div class="keyboard-hint" id="keyboardHint">SPACE・R・S</div>
             </div>
-            <div class="keyboard-hint" id="keyboardHint">SPACE: 再開/一時停止 · R: リセット</div>
         </div>
     </div>
+
+    <!-- フラッシュエフェクト -->
+    <div class="flash" id="flashEffect"></div>
 
     <script>
         let timeLeft = 300;
@@ -276,7 +290,6 @@
         const ensoFade = document.getElementById('ensoFade');
         const flashEffect = document.getElementById('flashEffect');
         const keyboardHint = document.getElementById('keyboardHint');
-        const container = document.querySelector('.container');
 
         // フォーマット表示
         function updateDisplay() {
@@ -285,17 +298,14 @@
             timerDisplay.textContent = 
                 String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
             
-            // 進捗に応じた粒子的消失エフェクト
+            // 進捗に応じた有機的な消失
             const progress = 1 - (timeLeft / totalTime);
             const fadeOpacity = Math.min(progress * 1.2, 1);
-            
-            // ノイズパターンを追加して粒子感を演出
-            const noiseIntensity = Math.random() * 0.05;
+            const noiseIntensity = Math.random() * 0.03;
             ensoFade.style.backgroundColor = `rgba(241, 236, 228, ${fadeOpacity + noiseIntensity})`;
-            ensoFade.style.filter = `url(#noiseFilter)`;
         }
 
-        // 白フラッシュエフェクト
+        // 白フラッシュ
         function playFlash() {
             flashEffect.style.transition = 'none';
             flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 1)';
@@ -310,13 +320,12 @@
         function playQuietSound() {
             try {
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const bufferSize = audioContext.sampleRate * 0.05; // 50ms
+                const bufferSize = audioContext.sampleRate * 0.05;
                 const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
                 const data = buffer.getChannelData(0);
                 
-                // ホワイトノイズ生成
                 for (let i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 0.01; // 極めて小さな音量
+                    data[i] = Math.random() * 0.008;
                 }
                 
                 const source = audioContext.createBufferSource();
@@ -325,12 +334,12 @@
                 source.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.015, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
                 
                 source.start(audioContext.currentTime);
             } catch (e) {
-                // オーディオコンテキスト利用不可の場合は無音
+                // 無音
             }
         }
 
@@ -345,7 +354,7 @@
             clearInterval(timerInterval);
             startBtn.classList.remove('hidden');
             pauseBtn.classList.add('hidden');
-            container.classList.remove('running');
+            keyboardHint.classList.remove('visible');
         });
 
         // 開始
@@ -355,7 +364,7 @@
             startBtn.classList.add('hidden');
             pauseBtn.classList.remove('hidden');
             inputSection.classList.add('hidden');
-            container.classList.add('running');
+            keyboardHint.classList.add('visible');
 
             timerInterval = setInterval(() => {
                 if (timeLeft > 0) {
@@ -367,9 +376,8 @@
                     pauseBtn.classList.add('hidden');
                     startBtn.classList.remove('hidden');
                     inputSection.classList.remove('hidden');
-                    container.classList.remove('running');
+                    keyboardHint.classList.remove('visible');
                     
-                    // 完了エフェクト
                     playFlash();
                     playQuietSound();
                 }
@@ -382,7 +390,7 @@
             clearInterval(timerInterval);
             pauseBtn.classList.add('hidden');
             startBtn.classList.remove('hidden');
-            container.classList.remove('running');
+            keyboardHint.classList.remove('visible');
         });
 
         // リセット
@@ -397,8 +405,8 @@
             startBtn.classList.remove('hidden');
             pauseBtn.classList.add('hidden');
             inputSection.classList.remove('hidden');
+            keyboardHint.classList.remove('visible');
             ensoFade.style.backgroundColor = 'rgba(241, 236, 228, 0)';
-            container.classList.remove('running');
         });
 
         // キーボードショートカット
@@ -424,4 +432,3 @@
     </script>
 </body>
 </html>
-

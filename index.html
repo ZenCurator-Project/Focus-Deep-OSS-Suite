@@ -8,7 +8,6 @@
     <style>
         :root {
             --bg-color: #F1ECE4;
-            --washi-pattern: url('https://www.transparenttextures.com/patterns/cream-paper.png');
         }
 
         body {
@@ -18,7 +17,7 @@
             justify-content: center;
             align-items: center;
             background-color: var(--bg-color);
-            background-image: var(--washi-pattern);
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
             font-family: 'Noto Serif JP', serif;
             overflow: hidden;
         }
@@ -32,8 +31,8 @@
             height: 500px;
         }
 
-        /* 1. 墨の画像レイヤー */
-        .enso-ink-image {
+        /* 墨の画像：ここ自体を削り取る設定（マスク不要） */
+        #ensoImage {
             position: absolute;
             width: 80%;
             height: 80%;
@@ -44,37 +43,10 @@
             z-index: 1;
             mix-blend-mode: multiply;
             opacity: 0.9;
+            /* 扇形に表示範囲を制限する設定 */
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
         }
 
-        /* 2. 蓋（マスク）レイヤー：境界線を消すために疑似要素を活用 */
-        .enso-mask-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 5;
-            pointer-events: none;
-            transform: rotate(-90deg);
-        }
-
-        .enso-mask {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            /* 扇形のグラデーション。背景色と完全に一致させる */
-            background: conic-gradient(transparent 0deg, var(--bg-color) 0deg);
-        }
-
-        /* マスクに和紙模様を重ねて「四角い違和感」を消す */
-        .enso-mask-container::after {
-            content: "";
-            position: absolute;
-            width: 100%; height: 100%;
-            background-image: var(--washi-pattern);
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        /* 3. タイマー表示レイヤー */
         .content-layer {
             position: relative;
             z-index: 10;
@@ -111,18 +83,13 @@
             padding: 0.6rem 2rem;
             cursor: pointer;
             font-family: 'Noto Serif JP', serif;
-            letter-spacing: 0.1rem;
-            transition: 0.3s;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="enso-ink-image"></div>
-    <div class="enso-mask-container">
-        <div class="enso-mask" id="ensoMask"></div>
-    </div>
+    <div id="ensoImage"></div>
 
     <div class="content-layer">
         <div id="status" class="status-text">Single-tasking</div>
@@ -142,21 +109,28 @@
     const display = document.getElementById('display');
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const ensoMask = document.getElementById('ensoMask');
+    const ensoImage = document.getElementById('ensoImage');
 
     function updateDisplay() {
         const mins = Math.floor(timeLeft / 60);
         const secs = timeLeft % 60;
         display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         
-        // 残り時間に合わせて和紙色の蓋を回転させる
-        const progress = 1 - (timeLeft / initialTime);
-        const degrees = progress * 360;
+        // 残り時間に合わせて、画像を表示する「扇形の角度」を直接計算する
+        const progress = timeLeft / initialTime;
+        const deg = progress * 360;
         
-        // 蓋の色を背景色（#F1ECE4）に固定し、角度だけを変える
-        ensoMask.style.background = `conic-gradient(transparent 0deg, #F1ECE4 ${degrees}deg)`;
-        
-        document.title = `${display.textContent} | Zen-Clock`;
+        // 複雑な計算を避け、確実な円形カットを適用
+        // 角度（deg）に応じて画像を円形に切り取る
+        if (progress > 0) {
+            ensoImage.style.display = 'block';
+            // conic-gradientをマスクとして使い、画像そのものを削る
+            ensoImage.style.webkitMaskImage = `conic-gradient(black ${deg}deg, transparent ${deg}deg)`;
+            ensoImage.style.maskImage = `conic-gradient(black ${deg}deg, transparent ${deg}deg)`;
+            ensoImage.style.transform = 'rotate(-0.1deg)'; // 描画バグ防止
+        } else {
+            ensoImage.style.display = 'none';
+        }
     }
 
     startBtn.addEventListener('click', () => {

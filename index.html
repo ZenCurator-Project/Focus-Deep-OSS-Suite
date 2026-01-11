@@ -22,7 +22,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #F5F3F0 0%, #F0EDE8 50%, #EBE8E3 100%);
+            background: #F5F3F0;
             font-family: 'Noto Serif JP', sans-serif;
             color: #1A1A1A;
             overflow: hidden;
@@ -78,7 +78,7 @@
             position: absolute;
             width: 360px;
             height: 360px;
-            background: linear-gradient(135deg, #F5F3F0 0%, #F0EDE8 50%, #EBE8E3 100%);
+            background: #F5F3F0;
             border-radius: 50%;
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -211,7 +211,7 @@
 
     <div class="main-display">
         <div class="enso-wrapper">
-            <div class="enso-image" id="ensoImage"></div>
+            <div class="enso-image" id="ensoImage" style="background-image: url('enso-circle.png');"></div>
             <div class="enso-fade" id="ensoFade"></div>
             
             <div class="timer-text">
@@ -256,6 +256,7 @@
         const secondsInput = document.getElementById('seconds');
         const ensoFade = document.getElementById('ensoFade');
         const ensoImage = document.getElementById('ensoImage');
+        ensoImage.style.backgroundImage = `url('enso-ink.png?t=${Date.now()}')`;
         const flashEffect = document.getElementById('flashEffect');
         const keyboardHint = document.getElementById('keyboardHint');
 

@@ -3,164 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zen-Clock | Focus-Deep</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
+    <title>禅タイマー Zen-Clock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #F1ECE4;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
+            width: 100vw;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: var(--bg-color);
+            background-color: #F1ECE4;
             background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            background-size: 512px 512px;
             font-family: 'Noto Serif JP', serif;
             overflow: hidden;
         }
 
         .container {
             position: relative;
+            width: 500px;
+            height: 500px;
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 500px;
-            height: 500px;
         }
 
-        /* 墨の画像：ここ自体を削り取る設定（マスク不要） */
-        #ensoImage {
+        /* 背景テクスチャレイヤー */
+        .background {
             position: absolute;
-            width: 80%;
-            height: 80%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #F1ECE4;
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            background-size: 512px 512px;
+            z-index: 0;
+        }
+
+        /* 墨の円レイヤー */
+        .enso-layer {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .enso-image {
+            width: 100%;
+            height: 100%;
             background-image: url('enso-ink.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            z-index: 1;
             mix-blend-mode: multiply;
-            opacity: 0.9;
-            /* 扇形に表示範囲を制限する設定 */
-            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
+            /* SVGベースの円形マスクを適用 */
+            -webkit-mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
+            mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
+            -webkit-mask-position: center;
+            mask-position: center;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
         }
 
-        .content-layer {
-            position: relative;
-            z-index: 10;
-            text-align: center;
+        /* 消えゆくアニメーション用オーバーレイ */
+        .enso-fade {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            z-index: 3;
+            -webkit-mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
+            mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
+            -webkit-mask-position: center;
+            mask-position: center;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
         }
 
-        .status-text {
-            font-size: 0.9rem;
-            letter-spacing: 0.6rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
+        /* UIコンテナ */
+        .ui-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 4;
+            pointer-events: none;
         }
 
+        /* タイマー数字 */
         .timer-display {
             font-family: 'Roboto Mono', monospace;
-            font-size: 8rem;
-            font-weight: 300;
-            letter-spacing: -5px;
-            margin: 0;
-            color: #1a1a1a;
+            font-size: 64px;
+            font-weight: 700;
+            color: rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 20px;
+            pointer-events: auto;
         }
 
+        /* コントロール */
         .controls {
-            margin-top: 2rem;
             display: flex;
-            gap: 1.5rem;
-            justify-content: center;
+            gap: 12px;
+            pointer-events: auto;
         }
 
-        .controls button {
-            background: rgba(255,255,255,0.4);
-            border: 1px solid rgba(0,0,0,0.1);
-            padding: 0.6rem 2rem;
-            cursor: pointer;
+        button {
             font-family: 'Noto Serif JP', serif;
+            font-size: 13px;
+            padding: 8px 16px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            background-color: rgba(255, 255, 255, 0.4);
+            color: rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.6);
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        button:active {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 入力フィールド */
+        .input-section {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            pointer-events: auto;
+        }
+
+        input {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+            width: 60px;
+            padding: 6px 8px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            background-color: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.7);
+            text-align: center;
+            border-radius: 2px;
+        }
+
+        input:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* 非表示 */
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <!-- 背景レイヤー -->
+        <div class="background"></div>
 
-<div class="container">
-    <div id="ensoImage"></div>
+        <!-- 墨の円レイヤー -->
+        <div class="enso-layer">
+            <div class="enso-image"></div>
+        </div>
 
-    <div class="content-layer">
-        <div id="status" class="status-text">Single-tasking</div>
-        <div id="display" class="timer-display">25:00</div>
-        <div class="controls">
-            <button id="startBtn">Start</button>
-            <button id="resetBtn">Reset</button>
+        <!-- フェードアウトレイヤー -->
+        <div class="enso-fade" id="ensoFade"></div>
+
+        <!-- UI -->
+        <div class="ui-container">
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            <div class="input-section" id="inputSection">
+                <input type="number" id="minutes" min="0" max="99" value="5" placeholder="MM">
+                <span style="color: rgba(0,0,0,0.3); font-size: 14px; display: flex; align-items: center;">:</span>
+                <input type="number" id="seconds" min="0" max="59" value="0" placeholder="SS">
+                <button id="setBtn">設定</button>
+            </div>
+            <div class="controls">
+                <button id="startBtn">開始</button>
+                <button id="pauseBtn" class="hidden">一時停止</button>
+                <button id="resetBtn">リセット</button>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    let initialTime = 25 * 60;
-    let timeLeft = initialTime;
-    let timerId = null;
+    <script>
+        let timeLeft = 300; // 5分（秒）
+        let totalTime = 300;
+        let isRunning = false;
+        let timerInterval = null;
 
-    const display = document.getElementById('display');
-    const startBtn = document.getElementById('startBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const ensoImage = document.getElementById('ensoImage');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const inputSection = document.getElementById('inputSection');
+        const minutesInput = document.getElementById('minutes');
+        const secondsInput = document.getElementById('seconds');
+        const setBtn = document.getElementById('setBtn');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const ensoFade = document.getElementById('ensoFade');
 
-    function updateDisplay() {
-        const mins = Math.floor(timeLeft / 60);
-        const secs = timeLeft % 60;
-        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        
-        // 残り時間に合わせて、画像を表示する「扇形の角度」を直接計算する
-        const progress = timeLeft / initialTime;
-        const deg = progress * 360;
-        
-        // 複雑な計算を避け、確実な円形カットを適用
-        // 角度（deg）に応じて画像を円形に切り取る
-        if (progress > 0) {
-            ensoImage.style.display = 'block';
-            // conic-gradientをマスクとして使い、画像そのものを削る
-            ensoImage.style.webkitMaskImage = `conic-gradient(black ${deg}deg, transparent ${deg}deg)`;
-            ensoImage.style.maskImage = `conic-gradient(black ${deg}deg, transparent ${deg}deg)`;
-            ensoImage.style.transform = 'rotate(-0.1deg)'; // 描画バグ防止
-        } else {
-            ensoImage.style.display = 'none';
+        // フォーマット表示
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerDisplay.textContent = 
+                String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+            
+            // 進捗に応じてフェード
+            const progress = 1 - (timeLeft / totalTime);
+            const fadeOpacity = Math.min(progress * 1.5, 1);
+            ensoFade.style.backgroundColor = `rgba(241, 236, 228, ${fadeOpacity})`;
         }
-    }
 
-    startBtn.addEventListener('click', () => {
-        if (timerId === null) {
-            timerId = setInterval(() => {
+        // 設定
+        setBtn.addEventListener('click', () => {
+            const mins = parseInt(minutesInput.value) || 0;
+            const secs = parseInt(secondsInput.value) || 0;
+            timeLeft = mins * 60 + secs;
+            totalTime = timeLeft;
+            updateDisplay();
+            isRunning = false;
+            clearInterval(timerInterval);
+            startBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+        });
+
+        // 開始
+        startBtn.addEventListener('click', () => {
+            if (timeLeft <= 0) return;
+            isRunning = true;
+            startBtn.classList.add('hidden');
+            pauseBtn.classList.remove('hidden');
+            inputSection.classList.add('hidden');
+
+            timerInterval = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
                     updateDisplay();
                 } else {
-                    clearInterval(timerId);
-                    timerId = null;
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    pauseBtn.classList.add('hidden');
+                    startBtn.classList.remove('hidden');
+                    inputSection.classList.remove('hidden');
+                    // 完了音（オプション）
+                    playSound();
                 }
             }, 1000);
-            startBtn.textContent = 'Pause';
-        } else {
-            clearInterval(timerId);
-            timerId = null;
-            startBtn.textContent = 'Resume';
+        });
+
+        // 一時停止
+        pauseBtn.addEventListener('click', () => {
+            isRunning = false;
+            clearInterval(timerInterval);
+            pauseBtn.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+        });
+
+        // リセット
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            isRunning = false;
+            const mins = parseInt(minutesInput.value) || 0;
+            const secs = parseInt(secondsInput.value) || 0;
+            timeLeft = mins * 60 + secs;
+            totalTime = timeLeft;
+            updateDisplay();
+            startBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+            inputSection.classList.remove('hidden');
+            ensoFade.style.backgroundColor = 'rgba(241, 236, 228, 0)';
+        });
+
+        // 完了時の音（オプション）
+        function playSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 528; // healing frequency
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 1);
         }
-    });
 
-    resetBtn.addEventListener('click', () => {
-        clearInterval(timerId);
-        timerId = null;
-        timeLeft = initialTime;
+        // 初期表示
         updateDisplay();
-        startBtn.textContent = 'Start';
-    });
-
-    updateDisplay();
-</script>
+    </script>
 </body>
 </html>

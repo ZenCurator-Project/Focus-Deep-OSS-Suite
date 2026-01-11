@@ -211,7 +211,7 @@
 
     <div class="main-display">
         <div class="enso-wrapper">
-            <div class="enso-image" id="ensoImage" style="background-image: url('enso-circle.png');"></div>
+            <div class="enso-image" id="ensoImage"></div>
             <div class="enso-fade" id="ensoFade"></div>
             
             <div class="timer-text">
@@ -256,6 +256,7 @@
         const secondsInput = document.getElementById('seconds');
         const ensoFade = document.getElementById('ensoFade');
         const ensoImage = document.getElementById('ensoImage');
+        ensoImage.style.backgroundImage = "url('enso-circle.png')";
         ensoImage.style.backgroundImage = `url('enso-ink.png?t=${Date.now()}')`;
         const flashEffect = document.getElementById('flashEffect');
         const keyboardHint = document.getElementById('keyboardHint');

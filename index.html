@@ -1,148 +1,132 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zen-Clock | Focus-Deep</title>
+    <title>Zen-Clock | Deep Focus</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Noto+Serif+JP:wght@300&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-base: #F0EDE8;
-            --text-main: #1A1A1A;
-            --light-shadow: rgba(0,0,0,0.05);
-            --dark-shadow: rgba(0,0,0,0.15);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
         }
 
         body {
-            margin: 0;
-            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: var(--bg-base);
-            background-image: 
-                radial-gradient(circle at center, transparent 0%, var(--light-shadow) 90%);
-            background-size: cover;
-            color: var(--text-main);
-            font-family: 'Noto Serif JP', serif;
+            background: linear-gradient(135deg, #F5F3F0 0%, #F0EDE8 50%, #EBE8E3 100%);
+            font-family: 'Noto Serif JP', sans-serif;
+            color: #1A1A1A;
             overflow: hidden;
         }
 
-        body.active {
-            animation: meditative-glow 12s infinite ease-in-out;
+        /* 上部ラベル */
+        .label-top {
+            position: absolute;
+            top: 60px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: rgba(0, 0, 0, 0.25);
+            text-transform: uppercase;
         }
 
-        @keyframes meditative-glow {
-            0%, 100% { background-color: #F0EDE8; }
-            50% { background-color: #E8E6E0; }
-        }
-
-        .container {
+        /* メインコンテナ */
+        .main-display {
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 380px;
-            height: 380px;
-            margin-bottom: 60px;
+            width: 420px;
+            height: 420px;
+            margin-bottom: 80px;
         }
 
-        .enso-ink {
-            position: absolute;
+        /* 墨の円 */
+        .enso-wrapper {
+            position: relative;
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            opacity: 0.8;
-            transition: opacity 1s ease-out;
-            filter: drop-shadow(0 0 5px rgba(0,0,0,0.05));
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        body.active .enso-ink {
-            opacity: 1;
-        }
-
-        .enso-mask-container {
+        .enso-image {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
+            width: 360px;
+            height: 360px;
+            background-image: url('enso-ink.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.85;
+            transition: opacity 0.5s ease;
         }
 
-        .enso-mask {
+        /* 消失マスク */
+        .enso-fade {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-base);
-            transform-origin: center center;
-            transform: rotateZ(-90deg) scaleY(0);
+            width: 360px;
+            height: 360px;
+            background: linear-gradient(135deg, #F5F3F0 0%, #F0EDE8 50%, #EBE8E3 100%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        body.active .enso-mask {
-            transform: rotateZ(-90deg) scaleY(1);
-        }
-
-        .status-text {
-            font-family: 'Noto Serif JP', serif;
-            font-size: 0.8rem;
-            letter-spacing: 0.6rem;
-            color: #666;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
+        /* 中央テキスト */
+        .timer-text {
+            position: absolute;
             z-index: 10;
+            text-align: center;
+        }
+
+        .timer-label {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            margin-bottom: 12px;
         }
 
         .timer-display {
             font-family: 'Roboto Mono', monospace;
-            font-size: 7rem;
+            font-size: 72px;
             font-weight: 300;
             letter-spacing: -2px;
-            margin: 0;
-            z-index: 10;
+            color: rgba(0, 0, 0, 0.4);
             font-variant-numeric: tabular-nums;
         }
 
-        .controls {
-            margin-top: 2rem;
+        /* 下部コントロール */
+        .controls-wrapper {
+            position: absolute;
+            bottom: -80px;
             display: flex;
-            gap: 2rem;
-            z-index: 10;
-        }
-
-        .controls button {
-            background: none;
-            border: 1px solid rgba(0,0,0,0.2);
-            border-radius: 5px;
-            color: var(--text-main);
-            font-family: 'Noto Serif JP', serif;
-            font-size: 0.75rem;
-            cursor: pointer;
-            letter-spacing: 0.1rem;
-            text-transform: uppercase;
-            padding: 0.6rem 1.5rem;
-            opacity: 0.7;
-            transition: all 0.3s ease;
-        }
-
-        .controls button:hover {
-            opacity: 1;
-            background-color: rgba(0,0,0,0.03);
-            transform: translateY(-1px);
-        }
-
-        .input-section {
-            display: none;
-            gap: 12px;
-            margin-bottom: 20px;
-            z-index: 10;
+            flex-direction: column;
+            gap: 20px;
             align-items: center;
         }
 
-        .input-section.visible {
+        .input-group {
+            display: none;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-group.visible {
             display: flex;
         }
 
@@ -151,36 +135,66 @@
             font-size: 14px;
             width: 50px;
             padding: 6px 8px;
-            border: 1px solid rgba(0,0,0,0.2);
-            background-color: rgba(255,255,255,0.6);
-            color: rgba(0,0,0,0.7);
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            background-color: rgba(255, 255, 255, 0.6);
+            color: rgba(0, 0, 0, 0.7);
             text-align: center;
-            border-radius: 2px;
+            border-radius: 3px;
         }
 
         input:focus {
             outline: none;
-            background-color: rgba(255,255,255,0.8);
-            border-color: rgba(0,0,0,0.3);
+            background-color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 0, 0, 0.25);
         }
 
+        .button-group {
+            display: flex;
+            gap: 16px;
+        }
+
+        button {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 13px;
+            padding: 8px 24px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            background-color: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.65);
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.7);
+            color: rgba(0, 0, 0, 0.85);
+        }
+
+        button:active {
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* フラッシュエフェクト */
         .flash {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255,255,255,0);
+            background-color: rgba(255, 255, 255, 0);
             pointer-events: none;
             z-index: 1000;
         }
 
+        /* キーボードヒント */
         .keyboard-hint {
             position: fixed;
             bottom: 20px;
             font-family: 'Roboto Mono', monospace;
             font-size: 9px;
-            color: rgba(0,0,0,0.12);
+            color: rgba(0, 0, 0, 0.1);
             letter-spacing: 2px;
             text-transform: uppercase;
             display: none;
@@ -191,123 +205,125 @@
         }
     </style>
 </head>
-<body id="body">
+<body>
 
-<div class="container">
-    <img src="enso-ink.png" alt="Zen Enso Ink Circle" class="enso-ink" id="ensoInk">
-    
-    <div class="enso-mask-container">
-        <div class="enso-mask" id="ensoMask"></div>
+    <div class="label-top">Single-Tasking</div>
+
+    <div class="main-display">
+        <div class="enso-wrapper">
+            <div class="enso-image" id="ensoImage"></div>
+            <div class="enso-fade" id="ensoFade"></div>
+            
+            <div class="timer-text">
+                <div class="timer-label" id="timerLabel">05:00</div>
+                <div class="timer-display" id="timerDisplay">05:00</div>
+            </div>
+        </div>
+
+        <div class="controls-wrapper">
+            <div class="input-group" id="inputGroup">
+                <input type="number" id="minutes" min="0" max="99" value="5" placeholder="MM">
+                <span style="color: rgba(0,0,0,0.3); font-size: 13px;">:</span>
+                <input type="number" id="seconds" min="0" max="59" value="0" placeholder="SS">
+                <button id="setBtn">Set</button>
+            </div>
+
+            <div class="button-group">
+                <button id="startBtn">Start</button>
+                <button id="pauseBtn" style="display: none;">Pause</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+        </div>
     </div>
 
-    <div class="status-text" id="status">Single-tasking</div>
-    <div id="display" class="timer-display">25:00</div>
-</div>
+    <div class="flash" id="flashEffect"></div>
+    <div class="keyboard-hint" id="keyboardHint">SPACE・R・S</div>
 
-<div class="input-section" id="inputSection">
-    <input type="number" id="minutes" min="0" max="99" value="25" placeholder="MM">
-    <span style="color: rgba(0,0,0,0.3);">:</span>
-    <input type="number" id="seconds" min="0" max="59" value="0" placeholder="SS">
-    <button id="setBtn">Set</button>
-</div>
+    <script>
+        let totalTime = 5 * 60;
+        let timeLeft = totalTime;
+        let timerId = null;
+        let isRunning = false;
 
-<div class="controls">
-    <button id="startBtn">Start</button>
-    <button id="pauseBtn" style="display: none;">Pause</button>
-    <button id="resetBtn">Reset</button>
-</div>
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerLabel = document.getElementById('timerLabel');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const setBtn = document.getElementById('setBtn');
+        const inputGroup = document.getElementById('inputGroup');
+        const minutesInput = document.getElementById('minutes');
+        const secondsInput = document.getElementById('seconds');
+        const ensoFade = document.getElementById('ensoFade');
+        const ensoImage = document.getElementById('ensoImage');
+        const flashEffect = document.getElementById('flashEffect');
+        const keyboardHint = document.getElementById('keyboardHint');
 
-<div class="keyboard-hint" id="keyboardHint">SPACE・R・S</div>
-<div class="flash" id="flashEffect"></div>
-
-<script>
-    let initialTime = 25 * 60;
-    let timeLeft = initialTime;
-    let timerId = null;
-
-    const display = document.getElementById('display');
-    const startBtn = document.getElementById('startBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const setBtn = document.getElementById('setBtn');
-    const body = document.getElementById('body');
-    const statusText = document.getElementById('status');
-    const ensoMask = document.getElementById('ensoMask');
-    const inputSection = document.getElementById('inputSection');
-    const minutesInput = document.getElementById('minutes');
-    const secondsInput = document.getElementById('seconds');
-    const keyboardHint = document.getElementById('keyboardHint');
-    const flashEffect = document.getElementById('flashEffect');
-
-    function updateDisplay() {
-        const mins = Math.floor(timeLeft / 60);
-        const secs = timeLeft % 60;
-        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        
-        const progress = timeLeft / initialTime;
-        ensoMask.style.transform = `rotateZ(${(-90 + (1 - progress) * 360)}deg) scaleY(1)`;
-        
-        document.title = `${display.textContent} | Zen-Clock`;
-    }
-
-    function playFlash() {
-        flashEffect.style.transition = 'none';
-        flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 1)';
-        
-        setTimeout(() => {
-            flashEffect.style.transition = 'background-color 0.8s ease-out';
-            flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 0)';
-        }, 50);
-    }
-
-    function playQuietSound() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const bufferSize = audioContext.sampleRate * 0.05;
-            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-            const data = buffer.getChannelData(0);
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            timerDisplay.textContent = timeStr;
+            timerLabel.textContent = timeStr;
             
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 0.007;
-            }
+            // 進捗に応じた消失エフェクト
+            const progress = (totalTime - timeLeft) / totalTime;
+            ensoFade.style.opacity = Math.min(progress * 1.3, 1);
             
-            const source = audioContext.createBufferSource();
-            const gainNode = audioContext.createGain();
-            source.buffer = buffer;
-            source.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.05);
-            
-            source.start(audioContext.currentTime);
-        } catch (e) {
-            // Silent
+            document.title = `${timeStr} | Zen-Clock`;
         }
-    }
 
-    startBtn.addEventListener('click', () => {
-        if (timerId === null) {
-            body.classList.add('active');
-            statusText.textContent = "Ichigyo Zanmai";
-            inputSection.classList.remove('visible');
-            startBtn.style.display = 'none';
-            pauseBtn.style.display = 'block';
-            keyboardHint.classList.add('visible');
-            
-            ensoMask.style.transition = 'transform 0s';
-            ensoMask.style.transform = `rotateZ(-90deg) scaleY(1)`;
+        function playFlash() {
+            flashEffect.style.transition = 'none';
+            flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 1)';
             
             setTimeout(() => {
-                ensoMask.style.transition = `transform ${initialTime}s linear`;
+                flashEffect.style.transition = 'background-color 0.8s ease-out';
+                flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+            }, 50);
+        }
+
+        function playQuietSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const bufferSize = audioContext.sampleRate * 0.05;
+                const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 0.006;
+                }
+                
+                const source = audioContext.createBufferSource();
+                const gainNode = audioContext.createGain();
+                source.buffer = buffer;
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                gainNode.gain.setValueAtTime(0.008, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.05);
+                
+                source.start(audioContext.currentTime);
+            } catch (e) {
+                // Silent
+            }
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                startBtn.style.display = 'none';
+                pauseBtn.style.display = 'block';
+                inputGroup.classList.remove('visible');
+                keyboardHint.classList.add('visible');
+                
                 timerId = setInterval(() => {
-                    timeLeft--;
-                    updateDisplay();
-                    if (timeLeft <= 0) {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay();
+                    } else {
                         clearInterval(timerId);
-                        timerId = null;
-                        body.classList.remove('active');
-                        statusText.textContent = "Finished";
+                        isRunning = false;
                         pauseBtn.style.display = 'none';
                         startBtn.style.display = 'block';
                         keyboardHint.classList.remove('visible');
@@ -315,68 +331,60 @@
                         playQuietSound();
                     }
                 }, 1000);
-            }, 50);
-        }
-    });
-
-    pauseBtn.addEventListener('click', () => {
-        clearInterval(timerId);
-        timerId = null;
-        body.classList.remove('active');
-        pauseBtn.style.display = 'none';
-        startBtn.style.display = 'block';
-        statusText.textContent = "Paused";
-        keyboardHint.classList.remove('visible');
-        startBtn.textContent = 'Resume';
-    });
-
-    resetBtn.addEventListener('click', () => {
-        clearInterval(timerId);
-        timerId = null;
-        timeLeft = initialTime;
-        updateDisplay();
-        body.classList.remove('active');
-        pauseBtn.style.display = 'none';
-        startBtn.style.display = 'block';
-        startBtn.textContent = 'Start';
-        statusText.textContent = "Single-tasking";
-        inputSection.classList.remove('visible');
-        keyboardHint.classList.remove('visible');
-        ensoMask.style.transition = 'transform 0.5s ease-out';
-        ensoMask.style.transform = `rotateZ(-90deg) scaleY(1)`;
-    });
-
-    setBtn.addEventListener('click', () => {
-        const mins = parseInt(minutesInput.value) || 25;
-        const secs = parseInt(secondsInput.value) || 0;
-        initialTime = mins * 60 + secs;
-        timeLeft = initialTime;
-        updateDisplay();
-        inputSection.classList.remove('visible');
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space') {
-            e.preventDefault();
-            if (timerId !== null) {
-                pauseBtn.click();
-            } else {
-                startBtn.click();
             }
-        } else if (e.code === 'KeyR') {
-            e.preventDefault();
-            resetBtn.click();
-        } else if (e.code === 'KeyS') {
-            e.preventDefault();
-            inputSection.classList.toggle('visible');
-            if (inputSection.classList.contains('visible')) {
-                minutesInput.focus();
-            }
-        }
-    });
+        });
 
-    updateDisplay();
-</script>
+        pauseBtn.addEventListener('click', () => {
+            clearInterval(timerId);
+            isRunning = false;
+            pauseBtn.style.display = 'none';
+            startBtn.style.display = 'block';
+            keyboardHint.classList.remove('visible');
+        });
+
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerId);
+            isRunning = false;
+            timeLeft = totalTime;
+            updateDisplay();
+            pauseBtn.style.display = 'none';
+            startBtn.style.display = 'block';
+            inputGroup.classList.remove('visible');
+            keyboardHint.classList.remove('visible');
+            ensoFade.style.opacity = 0;
+        });
+
+        setBtn.addEventListener('click', () => {
+            const mins = parseInt(minutesInput.value) || 5;
+            const secs = parseInt(secondsInput.value) || 0;
+            totalTime = mins * 60 + secs;
+            timeLeft = totalTime;
+            updateDisplay();
+            inputGroup.classList.remove('visible');
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isRunning) {
+                    pauseBtn.click();
+                } else if (timeLeft > 0) {
+                    startBtn.click();
+                }
+            } else if (e.code === 'KeyR') {
+                e.preventDefault();
+                resetBtn.click();
+            } else if (e.code === 'KeyS') {
+                e.preventDefault();
+                inputGroup.classList.toggle('visible');
+                if (inputGroup.classList.contains('visible')) {
+                    minutesInput.focus();
+                }
+            }
+        });
+
+        updateDisplay();
+    </script>
 
 </body>
 </html>

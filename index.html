@@ -1,143 +1,149 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zen-Clock | Deep Focus Timer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>Zen-Clock | Focus-Deep</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Noto+Serif+JP:wght@300&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
+        :root {
+            --bg-base: #F0EDE8;
+            --text-main: #1A1A1A;
+            --light-shadow: rgba(0,0,0,0.05);
+            --dark-shadow: rgba(0,0,0,0.15);
         }
 
         body {
+            margin: 0;
+            height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #F1ECE4;
-            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
-            background-size: 512px 512px;
-            background-attachment: fixed;
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at center, transparent 0%, var(--light-shadow) 90%);
+            background-size: cover;
+            color: var(--text-main);
             font-family: 'Noto Serif JP', serif;
             overflow: hidden;
         }
 
-        .main-container {
+        body.active {
+            animation: meditative-glow 12s infinite ease-in-out;
+        }
+
+        @keyframes meditative-glow {
+            0%, 100% { background-color: #F0EDE8; }
+            50% { background-color: #E8E6E0; }
+        }
+
+        .container {
             position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 380px;
+            height: 380px;
+            margin-bottom: 60px;
+        }
+
+        .enso-ink {
+            position: absolute;
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            object-fit: contain;
+            opacity: 0.8;
+            transition: opacity 1s ease-out;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.05));
         }
 
-        /* 墨の円エリア */
-        .enso-circle {
-            position: relative;
-            width: 400px;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 100px;
+        body.active .enso-ink {
+            opacity: 1;
         }
 
-        /* 墨の背景画像 */
-        .enso-image {
+        .enso-mask-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .enso-mask {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('enso-ink.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            mix-blend-mode: multiply;
-            -webkit-mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
-            mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
-            -webkit-mask-position: center;
-            mask-position: center;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
+            background-color: var(--bg-base);
+            transform-origin: center center;
+            transform: rotateZ(-90deg) scaleY(0);
         }
 
-        /* フェードレイヤー */
-        .enso-fade {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            -webkit-mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
-            mask-image: radial-gradient(circle, transparent 0%, transparent 48%, black 50%, black 100%);
-            -webkit-mask-position: center;
-            mask-position: center;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            pointer-events: none;
+        body.active .enso-mask {
+            transform: rotateZ(-90deg) scaleY(1);
         }
 
-        /* テキストレイヤー */
-        .text-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .label {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 3px;
-            color: rgba(0, 0, 0, 0.25);
+        .status-text {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.6rem;
+            color: #666;
             text-transform: uppercase;
-            margin-bottom: 16px;
+            margin-bottom: 0.5rem;
+            z-index: 10;
         }
 
         .timer-display {
             font-family: 'Roboto Mono', monospace;
-            font-size: 72px;
-            font-weight: 700;
-            color: rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
-            text-align: center;
+            font-size: 7rem;
+            font-weight: 300;
+            letter-spacing: -2px;
+            margin: 0;
+            z-index: 10;
+            font-variant-numeric: tabular-nums;
         }
 
-        /* コントロール部（下部） */
-        .controls-section {
-            position: relative;
-            margin-top: 60px;
+        .controls {
+            margin-top: 2rem;
             display: flex;
-            gap: 24px;
-            flex-direction: column;
-            align-items: center;
-            z-index: 20;
-            pointer-events: auto;
+            gap: 2rem;
+            z-index: 10;
+        }
+
+        .controls button {
+            background: none;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 5px;
+            color: var(--text-main);
+            font-family: 'Noto Serif JP', serif;
+            font-size: 0.75rem;
+            cursor: pointer;
+            letter-spacing: 0.1rem;
+            text-transform: uppercase;
+            padding: 0.6rem 1.5rem;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .controls button:hover {
+            opacity: 1;
+            background-color: rgba(0,0,0,0.03);
+            transform: translateY(-1px);
         }
 
         .input-section {
-            display: flex;
-            gap: 8px;
+            display: none;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 10;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
+        }
+
+        .input-section.visible {
+            display: flex;
         }
 
         input {
@@ -145,71 +151,36 @@
             font-size: 14px;
             width: 50px;
             padding: 6px 8px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            background-color: rgba(255, 255, 255, 0.6);
-            color: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(0,0,0,0.2);
+            background-color: rgba(255,255,255,0.6);
+            color: rgba(0,0,0,0.7);
             text-align: center;
             border-radius: 2px;
         }
 
         input:focus {
             outline: none;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-color: rgba(0, 0, 0, 0.3);
+            background-color: rgba(255,255,255,0.8);
+            border-color: rgba(0,0,0,0.3);
         }
 
-        .buttons-row {
-            display: flex;
-            gap: 16px;
-        }
-
-        button {
-            font-family: 'Noto Serif JP', serif;
-            font-size: 13px;
-            padding: 8px 24px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            background-color: rgba(255, 255, 255, 0.5);
-            color: rgba(0, 0, 0, 0.65);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 2px;
-            min-width: 80px;
-        }
-
-        button:hover {
-            background-color: rgba(255, 255, 255, 0.7);
-            color: rgba(0, 0, 0, 0.85);
-        }
-
-        button:active {
-            background-color: rgba(255, 255, 255, 0.6);
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* フラッシュエフェクト */
         .flash {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0);
+            background-color: rgba(255,255,255,0);
             pointer-events: none;
             z-index: 1000;
         }
 
-        /* キーボードヒント */
         .keyboard-hint {
             position: fixed;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
             font-family: 'Roboto Mono', monospace;
             font-size: 9px;
-            color: rgba(0, 0, 0, 0.12);
+            color: rgba(0,0,0,0.12);
             letter-spacing: 2px;
             text-transform: uppercase;
             display: none;
@@ -220,196 +191,192 @@
         }
     </style>
 </head>
-<body>
-    <div class="main-container">
-        <!-- 墨の円セクション -->
-        <div class="enso-circle">
-            <!-- 墨の背景 -->
-            <div class="enso-image"></div>
-            
-            <!-- フェードレイヤー -->
-            <div class="enso-fade" id="ensoFade"></div>
-            
-            <!-- テキスト -->
-            <div class="text-layer">
-                <div class="label">Single-Tasking</div>
-                <div class="timer-display" id="timerDisplay">05:00</div>
-            </div>
-        </div>
+<body id="body">
 
-        <!-- コントロールセクション -->
-        <div class="controls-section">
-            <!-- 入力フォーム（最初は隠れている） -->
-            <div class="input-section" id="inputSection" style="display: none;">
-                <input type="number" id="minutes" min="0" max="99" value="5" placeholder="MM">
-                <span style="color: rgba(0,0,0,0.3);">:</span>
-                <input type="number" id="seconds" min="0" max="59" value="0" placeholder="SS">
-                <button id="setBtn">設定</button>
-            </div>
-
-            <!-- ボタン -->
-            <div class="buttons-row">
-                <button id="startBtn">Start</button>
-                <button id="pauseBtn" class="hidden">Pause</button>
-                <button id="resetBtn">Reset</button>
-            </div>
-        </div>
+<div class="container">
+    <img src="enso-ink.png" alt="Zen Enso Ink Circle" class="enso-ink" id="ensoInk">
+    
+    <div class="enso-mask-container">
+        <div class="enso-mask" id="ensoMask"></div>
     </div>
 
-    <!-- フラッシュエフェクト -->
-    <div class="flash" id="flashEffect"></div>
+    <div class="status-text" id="status">Single-tasking</div>
+    <div id="display" class="timer-display">25:00</div>
+</div>
 
-    <!-- キーボードヒント -->
-    <div class="keyboard-hint" id="keyboardHint">SPACE・R・S</div>
+<div class="input-section" id="inputSection">
+    <input type="number" id="minutes" min="0" max="99" value="25" placeholder="MM">
+    <span style="color: rgba(0,0,0,0.3);">:</span>
+    <input type="number" id="seconds" min="0" max="59" value="0" placeholder="SS">
+    <button id="setBtn">Set</button>
+</div>
 
-    <script>
-        let timeLeft = 300;
-        let totalTime = 300;
-        let isRunning = false;
-        let timerInterval = null;
+<div class="controls">
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn" style="display: none;">Pause</button>
+    <button id="resetBtn">Reset</button>
+</div>
 
-        const timerDisplay = document.getElementById('timerDisplay');
-        const inputSection = document.getElementById('inputSection');
-        const minutesInput = document.getElementById('minutes');
-        const secondsInput = document.getElementById('seconds');
-        const setBtn = document.getElementById('setBtn');
-        const startBtn = document.getElementById('startBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const ensoFade = document.getElementById('ensoFade');
-        const flashEffect = document.getElementById('flashEffect');
-        const keyboardHint = document.getElementById('keyboardHint');
+<div class="keyboard-hint" id="keyboardHint">SPACE・R・S</div>
+<div class="flash" id="flashEffect"></div>
 
-        function updateDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            timerDisplay.textContent = 
-                String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+<script>
+    let initialTime = 25 * 60;
+    let timeLeft = initialTime;
+    let timerId = null;
+
+    const display = document.getElementById('display');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const setBtn = document.getElementById('setBtn');
+    const body = document.getElementById('body');
+    const statusText = document.getElementById('status');
+    const ensoMask = document.getElementById('ensoMask');
+    const inputSection = document.getElementById('inputSection');
+    const minutesInput = document.getElementById('minutes');
+    const secondsInput = document.getElementById('seconds');
+    const keyboardHint = document.getElementById('keyboardHint');
+    const flashEffect = document.getElementById('flashEffect');
+
+    function updateDisplay() {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        const progress = timeLeft / initialTime;
+        ensoMask.style.transform = `rotateZ(${(-90 + (1 - progress) * 360)}deg) scaleY(1)`;
+        
+        document.title = `${display.textContent} | Zen-Clock`;
+    }
+
+    function playFlash() {
+        flashEffect.style.transition = 'none';
+        flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+        
+        setTimeout(() => {
+            flashEffect.style.transition = 'background-color 0.8s ease-out';
+            flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+        }, 50);
+    }
+
+    function playQuietSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const bufferSize = audioContext.sampleRate * 0.05;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
             
-            // 進捗に応じた消失エフェクト
-            const progress = 1 - (timeLeft / totalTime);
-            const fadeOpacity = Math.min(progress * 1.3, 1);
-            const noise = Math.random() * 0.02;
-            ensoFade.style.backgroundColor = `rgba(241, 236, 228, ${fadeOpacity + noise})`;
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 0.007;
+            }
+            
+            const source = audioContext.createBufferSource();
+            const gainNode = audioContext.createGain();
+            source.buffer = buffer;
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.05);
+            
+            source.start(audioContext.currentTime);
+        } catch (e) {
+            // Silent
         }
+    }
 
-        function playFlash() {
-            flashEffect.style.transition = 'none';
-            flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+    startBtn.addEventListener('click', () => {
+        if (timerId === null) {
+            body.classList.add('active');
+            statusText.textContent = "Ichigyo Zanmai";
+            inputSection.classList.remove('visible');
+            startBtn.style.display = 'none';
+            pauseBtn.style.display = 'block';
+            keyboardHint.classList.add('visible');
+            
+            ensoMask.style.transition = 'transform 0s';
+            ensoMask.style.transform = `rotateZ(-90deg) scaleY(1)`;
             
             setTimeout(() => {
-                flashEffect.style.transition = 'background-color 0.8s ease-out';
-                flashEffect.style.backgroundColor = 'rgba(255, 255, 255, 0)';
-            }, 50);
-        }
-
-        function playQuietSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const bufferSize = audioContext.sampleRate * 0.05;
-                const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                const data = buffer.getChannelData(0);
-                
-                for (let i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 0.007;
-                }
-                
-                const source = audioContext.createBufferSource();
-                const gainNode = audioContext.createGain();
-                source.buffer = buffer;
-                source.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.05);
-                
-                source.start(audioContext.currentTime);
-            } catch (e) {
-                // Silent
-            }
-        }
-
-        startBtn.addEventListener('click', () => {
-            if (timeLeft <= 0) return;
-            isRunning = true;
-            startBtn.classList.add('hidden');
-            pauseBtn.classList.remove('hidden');
-            inputSection.style.display = 'none';
-            keyboardHint.classList.add('visible');
-
-            timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
+                ensoMask.style.transition = `transform ${initialTime}s linear`;
+                timerId = setInterval(() => {
                     timeLeft--;
                     updateDisplay();
-                } else {
-                    clearInterval(timerInterval);
-                    isRunning = false;
-                    pauseBtn.classList.add('hidden');
-                    startBtn.classList.remove('hidden');
-                    keyboardHint.classList.remove('visible');
-                    
-                    playFlash();
-                    playQuietSound();
-                }
-            }, 1000);
-        });
+                    if (timeLeft <= 0) {
+                        clearInterval(timerId);
+                        timerId = null;
+                        body.classList.remove('active');
+                        statusText.textContent = "Finished";
+                        pauseBtn.style.display = 'none';
+                        startBtn.style.display = 'block';
+                        keyboardHint.classList.remove('visible');
+                        playFlash();
+                        playQuietSound();
+                    }
+                }, 1000);
+            }, 50);
+        }
+    });
 
-        pauseBtn.addEventListener('click', () => {
-            isRunning = false;
-            clearInterval(timerInterval);
-            pauseBtn.classList.add('hidden');
-            startBtn.classList.remove('hidden');
-            keyboardHint.classList.remove('visible');
-        });
+    pauseBtn.addEventListener('click', () => {
+        clearInterval(timerId);
+        timerId = null;
+        body.classList.remove('active');
+        pauseBtn.style.display = 'none';
+        startBtn.style.display = 'block';
+        statusText.textContent = "Paused";
+        keyboardHint.classList.remove('visible');
+        startBtn.textContent = 'Resume';
+    });
 
-        resetBtn.addEventListener('click', () => {
-            clearInterval(timerInterval);
-            isRunning = false;
-            const mins = parseInt(minutesInput.value) || 0;
-            const secs = parseInt(secondsInput.value) || 0;
-            timeLeft = mins * 60 + secs;
-            totalTime = timeLeft;
-            updateDisplay();
-            startBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
-            keyboardHint.classList.remove('visible');
-            ensoFade.style.backgroundColor = 'rgba(241, 236, 228, 0)';
-        });
+    resetBtn.addEventListener('click', () => {
+        clearInterval(timerId);
+        timerId = null;
+        timeLeft = initialTime;
+        updateDisplay();
+        body.classList.remove('active');
+        pauseBtn.style.display = 'none';
+        startBtn.style.display = 'block';
+        startBtn.textContent = 'Start';
+        statusText.textContent = "Single-tasking";
+        inputSection.classList.remove('visible');
+        keyboardHint.classList.remove('visible');
+        ensoMask.style.transition = 'transform 0.5s ease-out';
+        ensoMask.style.transform = `rotateZ(-90deg) scaleY(1)`;
+    });
 
-        setBtn.addEventListener('click', () => {
-            const mins = parseInt(minutesInput.value) || 0;
-            const secs = parseInt(secondsInput.value) || 0;
-            timeLeft = mins * 60 + secs;
-            totalTime = timeLeft;
-            updateDisplay();
-            isRunning = false;
-            clearInterval(timerInterval);
-            startBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
-            inputSection.style.display = 'none';
-            keyboardHint.classList.remove('visible');
-        });
+    setBtn.addEventListener('click', () => {
+        const mins = parseInt(minutesInput.value) || 25;
+        const secs = parseInt(secondsInput.value) || 0;
+        initialTime = mins * 60 + secs;
+        timeLeft = initialTime;
+        updateDisplay();
+        inputSection.classList.remove('visible');
+    });
 
-        // キーボード
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (isRunning) {
-                    pauseBtn.click();
-                } else if (timeLeft > 0) {
-                    startBtn.click();
-                }
-            } else if (e.code === 'KeyR') {
-                e.preventDefault();
-                resetBtn.click();
-            } else if (e.code === 'KeyS') {
-                e.preventDefault();
-                inputSection.style.display = 'flex';
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            if (timerId !== null) {
+                pauseBtn.click();
+            } else {
+                startBtn.click();
+            }
+        } else if (e.code === 'KeyR') {
+            e.preventDefault();
+            resetBtn.click();
+        } else if (e.code === 'KeyS') {
+            e.preventDefault();
+            inputSection.classList.toggle('visible');
+            if (inputSection.classList.contains('visible')) {
                 minutesInput.focus();
             }
-        });
+        }
+    });
 
-        updateDisplay();
-    </script>
+    updateDisplay();
+</script>
+
 </body>
 </html>
